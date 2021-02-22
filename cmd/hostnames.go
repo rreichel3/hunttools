@@ -10,13 +10,12 @@ import (
 )
 
 func init() {
-	hostnamesCommand.Flags().StringVarP(&DestinationsPath, "in", "i", "", "Newline delimited file IPs to fetch hostname")
-	hostnamesCommand.Flags().BoolVarP(&HostnamesAliveFlag, "alive", "a", false, "Only return successful hostnames")
-	rootCmd.AddCommand(pingCmd)
+	hostnamesCommand.Flags().StringVarP(&DestinationsPath, "infile", "i", "", "Newline delimited file of IPs for which to fetch their hostname")
+	hostnamesCommand.MarkFlagRequired("infile")
+	rootCmd.AddCommand(hostnamesCommand)
 }
 
 var DestinationsPath string
-var HostnamesAliveFlag bool
 
 var hostnamesCommand = &cobra.Command{
 	Use:   "hostnames",
@@ -33,7 +32,7 @@ var hostnamesCommand = &cobra.Command{
 		for _, each_ln := range hostnameIPs {
 			addr, err := net.LookupAddr(each_ln)
 			if err != nil {
-				if !HostnamesAliveFlag {
+				if VerboseOutput {
 					fmt.Println(err)
 				}
 			} else {

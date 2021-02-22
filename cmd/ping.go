@@ -10,13 +10,12 @@ import (
 )
 
 func init() {
-	pingCmd.Flags().StringVarP(&PingDestinationsPath, "in", "i", "", "Newline delimited file of ping destinations")
-	pingCmd.Flags().BoolVarP(&PingAliveFlag, "alive", "a", false, "Only output if the host is alive")
+	pingCmd.Flags().StringVarP(&PingDestinationsPath, "infile", "i", "", "Newline delimited file of ping destinations")
+	pingCmd.MarkFlagRequired("infile")
 	rootCmd.AddCommand(pingCmd)
 }
 
 var PingDestinationsPath string
-var PingAliveFlag bool
 
 var pingCmd = &cobra.Command{
 	Use:   "ping",
@@ -33,14 +32,13 @@ var pingCmd = &cobra.Command{
 			alive, err := pingAddress(address)
 
 			if alive {
-				if PingAliveFlag {
-					fmt.Println(address)
-
-				} else {
+				if VerboseOutput {
 					fmt.Printf("%s, UP\n", address)
+				} else {
+					fmt.Println(address)
 				}
 			} else {
-				if !PingAliveFlag {
+				if VerboseOutput {
 					if err != nil {
 						fmt.Printf("%s, Error: %s\n", address, err)
 					}
