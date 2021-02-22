@@ -26,7 +26,7 @@ wget -O ht https://github.com/rreichel3/hunttools/releases/download/0.1beta/mac_
 #### Windows
 _Note: This is untested_
 ```bash
-wget -O ht https://github.com/rreichel3/hunttools/releases/download/0.1beta/mac_ht 
+wget -O ht https://github.com/rreichel3/hunttools/releases/download/0.1beta/ht.exe 
 ```
 
 
