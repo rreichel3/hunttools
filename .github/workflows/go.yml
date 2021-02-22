@@ -20,7 +20,9 @@ jobs:
     - name: Make Build Dir
       run: mkdir build
     - name: Build
-      run: go build -o ./build/ht -v ./...
+      run: go build -o ./build -v ./...
+    - name: Make Build Dir
+      run: ls build
     - name: Build windows binary
       run: env GOOS=windows GOARCH=amd64 go build -o ./build/ht.exe
     - uses: actions/upload-artifact@v2
