@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/go-ping/ping"
 	"github.com/rreichel3/hunttools/cmd/utils"
 
 	"github.com/spf13/cobra"
@@ -28,10 +29,43 @@ var pingCmd = &cobra.Command{
 			return err
 		}
 
-		for _, each_ln := range pingDestinations {
-			fmt.Println(each_ln)
+		for _, address := range pingDestinations {
+			alive, err := pingAddress(address)
+
+			if alive {
+				if PingAliveFlag {
+					fmt.Println(address)
+
+				} else {
+					fmt.Printf("%s, UP\n", address)
+				}
+			} else {
+				if !PingAliveFlag {
+					if err != nil {
+						fmt.Printf("%s, Error: %s\n", address, err)
+					}
+					fmt.Printf("%s, DOWN\n", address)
+				}
+			}
 		}
 		return nil
 
 	},
+}
+
+func pingAddress(addr string) (bool, error) {
+	pinger, err := ping.NewPinger(addr)
+	if err != nil {
+		return false, err
+	}
+	pinger.Count = 1
+	err = pinger.Run() // Blocks until finished.
+	if err != nil {
+		return false, err
+	}
+	stats := pinger.Statistics() // get send/receive/duplicate/rtt stats
+	if stats.PacketLoss != 0 {
+		return false, nil
+	}
+	return true, nil
 }
