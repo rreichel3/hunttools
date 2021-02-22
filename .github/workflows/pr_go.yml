@@ -1,10 +1,8 @@
-name: Release build
+name: Go
 
 on:
-  push:
+  pull_request:
     branches: [ main ]
-#  pull_request:
-#    branches: [ main ]
 
 jobs:
 
@@ -12,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-
     - name: Set up Go
       uses: actions/setup-go@v2
       with:
@@ -23,15 +20,5 @@ jobs:
       run: go build -o ./build -v ./...
     - name: Build windows binary
       run: env GOOS=windows GOARCH=amd64 go build -o ./build/ht.exe
-    - name: Upload Windows .exe
-      uses: actions/upload-artifact@v2
-      with:
-        name: ht.exe
-        path: ./build/ht.exe
-    - name: Upload Linux binary
-      uses: actions/upload-artifact@v2
-      with:
-        name: ht
-        path: ./build/hunttools
 #    - name: Test
 #      run: go test -v ./...
