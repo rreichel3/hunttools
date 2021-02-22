@@ -21,15 +21,15 @@ jobs:
       run: mkdir build
     - name: Build
       run: go build -o ./build -v ./...
-    - name: Make Build Dir
-      run: ls build
     - name: Build windows binary
       run: env GOOS=windows GOARCH=amd64 go build -o ./build/ht.exe
-    - uses: actions/upload-artifact@v2
+    - name: Upload Windows .exe
+      uses: actions/upload-artifact@v2
       with:
         name: ht.exe
         path: ./build/ht.exe
-    - uses: actions/upload-artifact@v2
+    - name: Upload Linux binary
+      uses: actions/upload-artifact@v2
       with:
         name: ht
         path: ./build/hunttools
