@@ -19,7 +19,7 @@ Using this, you should spend less time trying to remember how to write a loop in
 	VerboseOutput bool
 )
 
-// Execute executes the root command.
+// Execute executes the root com	mand.
 func Execute() error {
 	return rootCmd.Execute()
 }
