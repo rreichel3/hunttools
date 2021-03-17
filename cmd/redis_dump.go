@@ -2,29 +2,21 @@ package cmd
 
 import (
 	"fmt"
-	"context"
 	"encoding/json"
 	"github.com/go-redis/redis/v8"
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	redisDumpCmd.Flags().StringVarP(&RedisHostname, "host", "", "localhost", "Redis hostname. Defaults to locahost")
-	redisDumpCmd.Flags().IntVarP(&RedisPort, "port", "p", 6379, "Redis Port. Defaults to 6379")
-	redisDumpCmd.Flags().StringVarP(&RedisPassword, "password", "s", "", "Redis password. Defaults to empty.")
 	redisDumpCmd.Flags().IntVarP(&MaxDump, "count", "n", -1, "Max number to dump. Defaults to all. May dump a few more depending on how much comes from redis.")
 	redisDumpCmd.Flags().BoolVarP(&DumpJson, "json", "j", false, "Dump as json")
-	rootCmd.AddCommand(redisDumpCmd)
+	redisRootCmd.AddCommand(redisDumpCmd)
 }
-var ctx = context.Background()
 
-var RedisHostname string
-var RedisPort int
-var RedisPassword string
 var MaxDump int 
 var DumpJson bool
 var redisDumpCmd = &cobra.Command{
-	Use:   "redis-dump",
+	Use:   "dump",
 	Short: "Dump all keys and values in Redis.. Safely",
 	Long:  `Dump all keys and values in Redis.. Safely. Uses SCAN.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -79,7 +71,6 @@ var redisDumpCmd = &cobra.Command{
 			}
 		}
 		
-
 		return nil
 
 	},
