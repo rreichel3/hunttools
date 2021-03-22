@@ -7,10 +7,10 @@ import (
 )
 
 func init() {
-	redisRootCmd.Flags().StringVarP(&RedisHostname, "host", "H", "localhost", "Redis hostname. Defaults to locahost")
-	redisRootCmd.Flags().IntVarP(&RedisPort, "port", "P", 6379, "Redis Port. Defaults to 6379")
-	redisRootCmd.Flags().StringVarP(&RedisPassword, "password", "p", "", "Redis password. Defaults to empty.")
-	redisRootCmd.Flags().IntVarP(&RedisDB, "database", "d", 0, "Redis database. Defaults to 0.")
+	redisRootCmd.PersistentFlags().StringVarP(&RedisHostname, "host", "H", "localhost", "Redis hostname. Defaults to locahost")
+	redisRootCmd.PersistentFlags().IntVarP(&RedisPort, "port", "P", 6379, "Redis Port. Defaults to 6379")
+	redisRootCmd.PersistentFlags().StringVarP(&RedisPassword, "password", "p", "", "Redis password. Defaults to empty.")
+	redisRootCmd.PersistentFlags().IntVarP(&RedisDB, "database", "d", 0, "Redis db. Defaults to 0.")
 	rootCmd.AddCommand(redisRootCmd)
 }
 

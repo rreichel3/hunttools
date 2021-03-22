@@ -1,8 +1,10 @@
 package cmd
 
 import (
-	"fmt"
+	b64 "encoding/base64"
 	"encoding/json"
+	"fmt"
+
 	"github.com/go-redis/redis/v8"
 	"github.com/spf13/cobra"
 )
@@ -10,20 +12,22 @@ import (
 func init() {
 	redisDumpCmd.Flags().IntVarP(&MaxDump, "count", "n", -1, "Max number to dump. Defaults to all. May dump a few more depending on how much comes from redis.")
 	redisDumpCmd.Flags().BoolVarP(&DumpJson, "json", "j", false, "Dump as json")
+	redisDumpCmd.Flags().BoolVarP(&DumpValues, "values", "", false, "Dump values with keys")
 	redisRootCmd.AddCommand(redisDumpCmd)
 }
 
-var MaxDump int 
+var MaxDump int
 var DumpJson bool
+var DumpValues bool
 var redisDumpCmd = &cobra.Command{
 	Use:   "dump",
 	Short: "Dump all keys and values in Redis.. Safely",
-	Long:  `Dump all keys and values in Redis.. Safely. Uses SCAN.`,
+	Long:  `Dump all keys and values in Redis.. Safely. Uses DUMP.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		rdb := redis.NewClient(&redis.Options{
 			Addr:     fmt.Sprintf("%s:%d", RedisHostname, RedisPort),
 			Password: RedisPassword, // no password set
-			DB:       0,  // use default DB
+			DB:       RedisDB,       // use default DB
 		})
 		var cursor uint64
 		var n int
@@ -46,33 +50,43 @@ var redisDumpCmd = &cobra.Command{
 		if VerboseOutput {
 			fmt.Printf("found %d keys\n", n)
 		}
-		idx := 1
-		for key, _ := range allKeys {
-			val, err := rdb.Get(ctx, key).Result()
-			if err != nil {
-				fmt.Printf("Error encountered getting key: %s\n", key)
-				continue
+		if DumpValues {
+			for key, _ := range allKeys {
+				val, err := rdb.Dump(ctx, key).Result()
+				if err != nil {
+					fmt.Printf("Error encountered getting key: %s\n", key)
+					continue
+				}
+				sEnc := b64.StdEncoding.EncodeToString([]byte(val))
+				allKeys[key] = sEnc
 			}
-			allKeys[key] = val
-			idx++
-		}
-		idx = 1
-		if DumpJson {
-			jsonStr, _ := json.Marshal(allKeys)
-			fmt.Println(string(jsonStr))
+			idx := 1
+			if DumpJson {
+				jsonStr, _ := json.Marshal(allKeys)
+				fmt.Println(string(jsonStr))
+			} else {
+				for k, v := range allKeys {
+					if VerboseOutput {
+						fmt.Printf("%d: %s => %s\n", idx, k, v)
+					} else {
+						fmt.Printf("%s => %s\n", k, v)
+					}
+					idx++
+				}
+			}
 		} else {
-			for k, v := range allKeys {
+			idx := 1
+			for k, _ := range allKeys {
 				if VerboseOutput {
-					fmt.Printf("%d: %s => %s\n", idx, k, v)
+					fmt.Printf("%d: %s\n", idx, k)
 				} else {
-					fmt.Printf("%s => %s\n", k, v)
+					fmt.Printf("%s\n", k)
 				}
 				idx++
 			}
 		}
-		
+
 		return nil
 
 	},
 }
-

@@ -1,11 +1,12 @@
 package cmd
 
 import (
-	"fmt"
 	b64 "encoding/base64"
+	"fmt"
+
 	"github.com/go-redis/redis/v8"
-	"github.com/spf13/cobra"
 	"github.com/rreichel3/hunttools/cmd/utils"
+	"github.com/spf13/cobra"
 )
 
 func init() {
@@ -15,7 +16,7 @@ func init() {
 	redisRootCmd.AddCommand(redisUploadCmd)
 }
 
-var UploadJsonInfile string 
+var UploadJsonInfile string
 var redisUploadCmd = &cobra.Command{
 	Use:   "restore",
 	Short: "Upload the results of ht redis dump",
@@ -24,9 +25,9 @@ var redisUploadCmd = &cobra.Command{
 		rdb := redis.NewClient(&redis.Options{
 			Addr:     fmt.Sprintf("%s:%d", RedisHostname, RedisPort),
 			Password: RedisPassword, // no password set
-			DB:       RedisDB,  // use default DB
+			DB:       RedisDB,       // use default DB
 		})
-		
+
 		// Load JSON Infile
 		dataToUpload, err := utils.LoadJsonMap(UploadJsonInfile)
 		if err != nil {
@@ -40,9 +41,8 @@ var redisUploadCmd = &cobra.Command{
 			dumpValue, _ := b64.StdEncoding.DecodeString(value)
 			rdb.Restore(ctx, key, 0, string(dumpValue))
 		}
-		
+
 		return nil
 
 	},
 }
-
