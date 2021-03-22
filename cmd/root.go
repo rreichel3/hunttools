@@ -25,5 +25,5 @@ func Execute() error {
 }
 
 func init() {
-	rootCmd.Flags().BoolVarP(&VerboseOutput, "verbose", "v", false, "Output full results, not newline formatted")
+	rootCmd.PersistentFlags().BoolVarP(&VerboseOutput, "verbose", "v", false, "Output full results, not newline formatted")
 }

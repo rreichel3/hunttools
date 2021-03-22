@@ -2,10 +2,12 @@ package cmd
 
 import (
 	b64 "encoding/base64"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/rreichel3/hunttools/cmd/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -14,6 +16,24 @@ func init() {
 	redisUploadCmd.MarkFlagRequired("infile")
 
 	redisRootCmd.AddCommand(redisUploadCmd)
+}
+
+func loadRedisData(sourceFilePath string) ([]RedisData, error) {
+	jsonFile, err := os.Open(sourceFilePath)
+	// if we os.Open returns an error then handle it
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	// defer the closing of our jsonFile so that we can parse it later on
+	defer jsonFile.Close()
+
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+
+	var result []RedisData
+	json.Unmarshal([]byte(byteValue), &result)
+
+	return result, nil
 }
 
 var UploadJsonInfile string
@@ -29,15 +49,16 @@ var redisUploadCmd = &cobra.Command{
 		})
 
 		// Load JSON Infile
-		dataToUpload, err := utils.LoadJsonMap(UploadJsonInfile)
+		dataToUpload, err := loadRedisData(UploadJsonInfile)
 		if err != nil {
 			fmt.Printf("Unable to load file: %s\n", UploadJsonInfile)
 			return err
 		}
 		// For each key, add to database
-		for key, valueInterface := range dataToUpload {
+		for _, redisData := range dataToUpload {
+			var key = fmt.Sprintf("%s:%s", redisData.Database, redisData.Key)
 			// Need to base64 decode the value
-			value := fmt.Sprintf("%v", valueInterface)
+			value := fmt.Sprintf("%v", redisData.Value)
 			dumpValue, _ := b64.StdEncoding.DecodeString(value)
 			rdb.Restore(ctx, key, 0, string(dumpValue))
 		}
