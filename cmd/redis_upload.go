@@ -60,7 +60,12 @@ var redisUploadCmd = &cobra.Command{
 			// Need to base64 decode the value
 			value := fmt.Sprintf("%v", redisData.Value)
 			dumpValue, _ := b64.StdEncoding.DecodeString(value)
-			rdb.Restore(ctx, key, 0, string(dumpValue))
+			_, err := rdb.Restore(ctx, key, 0, string(dumpValue)).Result()
+			if err != nil {
+				fmt.Println(err)
+				continue
+			}
+
 		}
 
 		return nil
