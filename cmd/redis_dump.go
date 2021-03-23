@@ -71,6 +71,7 @@ var redisDumpCmd = &cobra.Command{
 				var err error
 				keys, cursor, err = rdb.Scan(ctx, cursor, "*", 1000).Result()
 				if err != nil {
+					println(err)
 					panic(err)
 				}
 				keysForDb = append(keysForDb, keys...)
@@ -91,6 +92,7 @@ var redisDumpCmd = &cobra.Command{
 		if DumpValues {
 			var fullList = make([]RedisData, len(allKeys))
 			for dbNum, keys := range allKeys {
+				println("Grabbing keys from db", dbNum)
 				rdb = redis.NewClient(&redis.Options{
 					Addr:     fmt.Sprintf("%s:%d", RedisHostname, RedisPort),
 					Password: RedisPassword, // no password set
@@ -104,8 +106,11 @@ var redisDumpCmd = &cobra.Command{
 
 				for _, key := range keys {
 					time.Sleep(time.Millisecond * 100)
+					println("Fetching key:", key)
+
 					val, err := rdb.Dump(ctx, key).Result()
 					if err != nil {
+						println(err)
 						if VerboseOutput {
 							fmt.Printf("Error encountered getting key: %s\n", key)
 							fmt.Printf("Error: %v\n", err)

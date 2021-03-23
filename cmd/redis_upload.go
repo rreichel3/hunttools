@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strconv"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/spf13/cobra"
@@ -59,7 +60,7 @@ var redisUploadCmd = &cobra.Command{
 		}
 		// For each key, add to database
 		for _, redisData := range dataToUpload {
-			var key = fmt.Sprintf("%s:%s", redisData.Database, redisData.Key)
+			var key = fmt.Sprintf("%s:%s", strconv.Itoa(redisData.Database), redisData.Key)
 			keycount++
 			// Need to base64 decode the value
 			value := fmt.Sprintf("%v", redisData.Value)
