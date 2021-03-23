@@ -42,6 +42,7 @@ var redisUploadCmd = &cobra.Command{
 	Short: "Upload the results of ht redis dump",
 	Long:  `Upload the results of ht redis dump. Uses RESTORE`,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		keycount := 0
 		rdb := redis.NewClient(&redis.Options{
 			Addr:     fmt.Sprintf("%s:%d", RedisHostname, RedisPort),
 			Password: RedisPassword, // no password set
@@ -57,8 +58,12 @@ var redisUploadCmd = &cobra.Command{
 		// For each key, add to database
 		for _, redisData := range dataToUpload {
 			var key = fmt.Sprintf("%s:%s", redisData.Database, redisData.Key)
+			keycount++
 			// Need to base64 decode the value
 			value := fmt.Sprintf("%v", redisData.Value)
+			if VerboseOutput {
+				fmt.Printf("restoring key: %v\n", key)
+			}
 			dumpValue, _ := b64.StdEncoding.DecodeString(value)
 			_, err := rdb.Restore(ctx, key, 0, string(dumpValue)).Result()
 			if err != nil {
@@ -66,6 +71,10 @@ var redisUploadCmd = &cobra.Command{
 				continue
 			}
 
+		}
+
+		if VerboseOutput {
+			fmt.Printf("loaded %d keys\n", keycount)
 		}
 
 		return nil

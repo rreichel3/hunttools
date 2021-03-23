@@ -1,0 +1,6 @@
+*.swp
+*.swo
+*.json
+*.o
+main
+hunttools
