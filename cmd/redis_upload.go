@@ -48,7 +48,9 @@ var redisUploadCmd = &cobra.Command{
 			Password: RedisPassword, // no password set
 			DB:       RedisDB,       // use default DB
 		})
-
+		if VerboseOutput {
+			fmt.Printf("Loading file from %s\n", UploadJsonInfile)
+		}
 		// Load JSON Infile
 		dataToUpload, err := loadRedisData(UploadJsonInfile)
 		if err != nil {

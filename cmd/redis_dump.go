@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"time"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/spf13/cobra"
@@ -95,8 +96,14 @@ var redisDumpCmd = &cobra.Command{
 					Password: RedisPassword, // no password set
 					DB:       dbNum,         // use default DB
 				})
-				for _, key := range keys {
+				// limiter := redis_rate.NewLimiter(rdb)
+				// _, err := limiter.Allow(ctx, "*", redis_rate.PerSecond(1))
+				// if err != nil {
+				// panic(err)
+				// }
 
+				for _, key := range keys {
+					time.Sleep(time.Millisecond * 100)
 					val, err := rdb.Dump(ctx, key).Result()
 					if err != nil {
 						if VerboseOutput {
