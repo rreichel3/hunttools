@@ -68,7 +68,7 @@ var redisDumpCmd = &cobra.Command{
 			for {
 				var keys []string
 				var err error
-				keys, cursor, err = rdb.Scan(ctx, cursor, "*", 10).Result()
+				keys, cursor, err = rdb.Scan(ctx, cursor, "*", 1000).Result()
 				if err != nil {
 					panic(err)
 				}
@@ -99,7 +99,10 @@ var redisDumpCmd = &cobra.Command{
 
 					val, err := rdb.Dump(ctx, key).Result()
 					if err != nil {
-						fmt.Printf("Error encountered getting key: %s\n", key)
+						if VerboseOutput {
+							fmt.Printf("Error encountered getting key: %s\n", key)
+							fmt.Printf("Error: %v\n", err)
+						}
 						continue
 					}
 					if VerboseOutput {
