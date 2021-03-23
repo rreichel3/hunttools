@@ -4,3 +4,4 @@
 *.o
 main
 hunttools
+.DS_Store
