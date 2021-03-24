@@ -15,7 +15,10 @@ import (
 func init() {
 	redisDumpCmd.Flags().IntVarP(&MaxDump, "count", "n", -1, "Max number to dump. Defaults to all. May dump a few more depending on how much comes from redis.")
 	redisDumpCmd.Flags().BoolVarP(&DumpJson, "json", "j", false, "Dump as json")
+	redisDumpCmd.Flags().IntVarP(&MaxKeySize, "maxkeysize", "m", 1000000, "The maximum key size to dump")
 	redisDumpCmd.Flags().BoolVarP(&DumpValues, "values", "", false, "Dump values with keys")
+	redisDumpCmd.Flags().BoolVarP(&GoFast, "fast", "f", false, "Disable rate limiting")
+
 	redisRootCmd.AddCommand(redisDumpCmd)
 }
 
@@ -27,8 +30,12 @@ type RedisData struct {
 }
 
 var MaxDump int
+var MaxKeySize int
+
 var DumpJson bool
 var DumpValues bool
+var GoFast bool
+
 var redisDumpCmd = &cobra.Command{
 	Use:   "dump",
 	Short: "Dump all keys and values in Redis.. Safely",
@@ -46,10 +53,12 @@ var redisDumpCmd = &cobra.Command{
 		re := regexp.MustCompile(`db(\d+)`)
 		matches := re.FindAllStringSubmatch(keyspace, -1)
 		dbs := make(map[int]bool, 1)
+
 		for _, match := range matches {
 			dbNum, _ := strconv.Atoi(match[1])
 			dbs[dbNum] = true
 		}
+		println(dbs)
 		if VerboseOutput {
 			fmt.Printf("Dumping %d keyspace(s)..\n", len(dbs))
 			fmt.Printf("%v", dbs)
@@ -77,13 +86,15 @@ var redisDumpCmd = &cobra.Command{
 				keysForDb = append(keysForDb, keys...)
 
 				n += len(keys)
-				if cursor == 0 || (MaxDump != -1 && n >= MaxDump) {
+				println("Current len(keysForDb): " + strconv.Itoa(len(keysForDb)))
+				println("MaxDump: " + strconv.Itoa(MaxDump))
+				if cursor == 0 || (MaxDump != -1 && len(keysForDb) >= MaxDump) {
 					break
 				}
 			}
 			allKeys[dbNum] = keysForDb
 		}
-
+		println("found keys: " + strconv.Itoa(n))
 		if VerboseOutput {
 			fmt.Printf("found %d keys\n", n)
 			fmt.Printf("found %v keys\n", allKeys)
@@ -105,9 +116,16 @@ var redisDumpCmd = &cobra.Command{
 				// }
 
 				for _, key := range keys {
-					time.Sleep(time.Millisecond * 100)
+					if !GoFast {
+						time.Sleep(time.Millisecond * 100)
+					}
 					println("Fetching key:", key)
-
+					keySize, err := rdb.MemoryUsage(ctx, key, 0).Result()
+					println("MemoryUsage:", keySize)
+					if keySize > int64(MaxKeySize) {
+						println("Max key size found")
+						continue
+					}
 					val, err := rdb.Dump(ctx, key).Result()
 					if err != nil {
 						println(err)
