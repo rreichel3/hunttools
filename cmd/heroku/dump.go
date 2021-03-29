@@ -11,7 +11,7 @@ import (
 
 func init() {
 
-	herokuRootCommand.AddCommand(herokuDumpAllCmd)
+	HerokuRootCmd.AddCommand(herokuDumpAllCmd)
 }
 
 type HerokuSecret struct {
