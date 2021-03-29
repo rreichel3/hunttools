@@ -1,4 +1,4 @@
-package cmd
+package github
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"strings"
 
+	root "github.com/rreichel3/hunttools/cmd/root_flags"
 	"github.com/rreichel3/hunttools/cmd/utils"
 
 	"github.com/spf13/cobra"
@@ -18,7 +19,7 @@ func init() {
 	danglingPagesCmd.Flags().StringVarP(&RootDomain, "rootdomain", "d", "", "The root domain for the provided subdomain lists")
 	danglingPagesCmd.MarkFlagRequired("rootdomain")
 
-	rootCmd.AddCommand(danglingPagesCmd)
+	GitHubRootCmd.AddCommand(danglingPagesCmd)
 }
 
 var DomainJsonListPath string
@@ -37,7 +38,7 @@ var danglingPagesCmd = &cobra.Command{
 
 		for _, address := range addresses {
 			hostname := fmt.Sprintf("%v.%s", address["name"], RootDomain)
-			if VerboseOutput {
+			if root.VerboseOutput {
 				fmt.Println("Processing host: " + hostname)
 			}
 			if isDangling(hostname) {
@@ -53,7 +54,7 @@ func isPages(addr string) bool {
 	cmd := exec.Command("dig", addr)
 	out, err := cmd.Output()
 	if err != nil {
-		if VerboseOutput {
+		if root.VerboseOutput {
 			fmt.Println(err)
 		}
 		return false
@@ -65,14 +66,14 @@ func isPages(addr string) bool {
 func isUnallocated(addr string) bool {
 	resp, err := http.Get("https://" + addr)
 	if err != nil {
-		if VerboseOutput {
+		if root.VerboseOutput {
 			fmt.Println(err)
 		}
 		return false
 	}
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		if VerboseOutput {
+		if root.VerboseOutput {
 			fmt.Println(err)
 		}
 		return false

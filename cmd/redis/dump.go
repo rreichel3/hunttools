@@ -4,6 +4,7 @@ import (
 	b64 "encoding/base64"
 	"encoding/json"
 	"fmt"
+	root "github.com/rreichel3/hunttools/cmd/root_flags"
 	"regexp"
 	"strconv"
 	"time"
@@ -19,7 +20,7 @@ func init() {
 	redisDumpCmd.Flags().BoolVarP(&DumpValues, "values", "", false, "Dump values with keys")
 	redisDumpCmd.Flags().BoolVarP(&GoFast, "fast", "f", false, "Disable rate limiting")
 
-	redisRootCmd.AddCommand(redisDumpCmd)
+	RedisRootCmd.AddCommand(redisDumpCmd)
 }
 
 type RedisData struct {
@@ -59,7 +60,7 @@ var redisDumpCmd = &cobra.Command{
 			dbs[dbNum] = true
 		}
 		println(dbs)
-		if VerboseOutput {
+		if root.VerboseOutput {
 			fmt.Printf("Dumping %d keyspace(s)..\n", len(dbs))
 			fmt.Printf("%v", dbs)
 		}
@@ -95,7 +96,7 @@ var redisDumpCmd = &cobra.Command{
 			allKeys[dbNum] = keysForDb
 		}
 		println("found keys: " + strconv.Itoa(n))
-		if VerboseOutput {
+		if root.VerboseOutput {
 			fmt.Printf("found %d keys\n", n)
 			fmt.Printf("found %v keys\n", allKeys)
 		}
@@ -129,13 +130,13 @@ var redisDumpCmd = &cobra.Command{
 					val, err := rdb.Dump(ctx, key).Result()
 					if err != nil {
 						println(err)
-						if VerboseOutput {
+						if root.VerboseOutput {
 							fmt.Printf("Error encountered getting key: %s\n", key)
 							fmt.Printf("Error: %v\n", err)
 						}
 						continue
 					}
-					if VerboseOutput {
+					if root.VerboseOutput {
 						fmt.Printf("Got key: %s\n", key)
 					}
 					sEnc := b64.StdEncoding.EncodeToString([]byte(val))
@@ -152,7 +153,7 @@ var redisDumpCmd = &cobra.Command{
 				fmt.Println(string(jsonStr))
 			} else {
 				for k, v := range allKeys {
-					if VerboseOutput {
+					if root.VerboseOutput {
 						fmt.Printf("%d: %s => %s\n", idx, k, v)
 					} else {
 						fmt.Printf("%s => %s\n", k, v)
@@ -163,7 +164,7 @@ var redisDumpCmd = &cobra.Command{
 		} else {
 			idx := 1
 			for dbNum, key := range allKeys {
-				if VerboseOutput {
+				if root.VerboseOutput {
 					fmt.Printf("%d: (DB%d) %s\n", idx, dbNum, key)
 				} else {
 					fmt.Printf("(DB%d) %s\n", dbNum, key)
