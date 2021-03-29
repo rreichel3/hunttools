@@ -6,8 +6,6 @@ import (
 )
 
 func init() {
-	// herokuRootCommand.PersistentFlags().StringVarP(&HerokuBearer, "bearer", "b", "localhost", "Bearer token to auth to Heroku")
-	// RootCmd.AddCommand(herokuRootCommand)
 }
 
 var ctx = context.Background()
