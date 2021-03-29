@@ -1,9 +1,10 @@
-package cmd
+package network
 
 import (
 	"fmt"
 
 	"github.com/go-ping/ping"
+	root "github.com/rreichel3/hunttools/cmd/root_flags"
 	"github.com/rreichel3/hunttools/cmd/utils"
 
 	"github.com/spf13/cobra"
@@ -12,7 +13,7 @@ import (
 func init() {
 	pingCmd.Flags().StringVarP(&PingDestinationsPath, "infile", "i", "", "Newline delimited file of ping destinations")
 	pingCmd.MarkFlagRequired("infile")
-	rootCmd.AddCommand(pingCmd)
+	NetworkRootCmd.AddCommand(pingCmd)
 }
 
 var PingDestinationsPath string
@@ -32,13 +33,13 @@ var pingCmd = &cobra.Command{
 			alive, err := pingAddress(address)
 
 			if alive {
-				if VerboseOutput {
+				if root.VerboseOutput {
 					fmt.Printf("%s, UP\n", address)
 				} else {
 					fmt.Println(address)
 				}
 			} else {
-				if VerboseOutput {
+				if root.VerboseOutput {
 					if err != nil {
 						fmt.Printf("%s, Error: %s\n", address, err)
 					}

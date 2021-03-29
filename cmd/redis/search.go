@@ -2,11 +2,9 @@ package cmd
 
 import (
 	b64 "encoding/base64"
-	//"encoding/json"
 	"fmt"
+	root "github.com/rreichel3/hunttools/cmd/root_flags"
 	"strings"
-	//"io/ioutil"
-	//"os"
 
 	"github.com/spf13/cobra"
 )
@@ -22,7 +20,7 @@ func init() {
 	// NOTE: if you see a command duplicated
 	// in the help system, check the `AddCommand`
 	// calls in all of your cmds...
-	redisRootCmd.AddCommand(redisSearchCmd)
+	RedisRootCmd.AddCommand(redisSearchCmd)
 }
 
 var UploadInfile string
@@ -51,7 +49,7 @@ var redisSearchCmd = &cobra.Command{
 			// Need to base64 decode the value
 			value := fmt.Sprintf("%v", redisData.Value)
 			if key == SearchString || (Fuzzy && strings.Contains(key, SearchString)) {
-				if VerboseOutput {
+				if root.VerboseOutput {
 					fmt.Printf("key: %v\n", key)
 				}
 

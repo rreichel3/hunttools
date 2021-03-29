@@ -1,13 +1,14 @@
 package cmd
 
 import (
-	"fmt"
-	"compress/zlib"
 	"bytes"
-	"os"
-	"io"
+	"compress/zlib"
+	"fmt"
 	"github.com/go-redis/redis/v8"
+	root "github.com/rreichel3/hunttools/cmd/root_flags"
 	"github.com/spf13/cobra"
+	"io"
+	"os"
 )
 
 func init() {
@@ -18,7 +19,7 @@ func init() {
 	redisGetHashCmd.MarkFlagRequired("hash-key")
 
 	redisGetHashCmd.Flags().BoolVarP(&DecompressZlib, "zlib-decompress", "z", false, "Decompress value as compressed zlib")
-	redisRootCmd.AddCommand(redisGetHashCmd)
+	RedisRootCmd.AddCommand(redisGetHashCmd)
 }
 
 var RedisKey string
@@ -32,9 +33,9 @@ var redisGetHashCmd = &cobra.Command{
 		rdb := redis.NewClient(&redis.Options{
 			Addr:     fmt.Sprintf("%s:%d", RedisHostname, RedisPort),
 			Password: RedisPassword, // no password set
-			DB:       0,  // use default DB
+			DB:       0,             // use default DB
 		})
-		if VerboseOutput {
+		if root.VerboseOutput {
 			fmt.Println("Fetching key and value")
 		}
 		value, err := rdb.HGet(ctx, RedisKey, HashKey).Result()
@@ -43,7 +44,7 @@ var redisGetHashCmd = &cobra.Command{
 			return err
 		}
 		if DecompressZlib {
-			if VerboseOutput {
+			if root.VerboseOutput {
 				fmt.Println("Decompressing")
 			}
 			var b = bytes.NewBufferString(value)
@@ -57,9 +58,8 @@ var redisGetHashCmd = &cobra.Command{
 		} else {
 			fmt.Println(value)
 		}
-		
+
 		return nil
 
 	},
 }
-

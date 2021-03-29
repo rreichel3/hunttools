@@ -1,9 +1,10 @@
-package cmd
+package network
 
 import (
 	"fmt"
 	"net"
 
+	root "github.com/rreichel3/hunttools/cmd/root_flags"
 	"github.com/rreichel3/hunttools/cmd/utils"
 
 	"github.com/spf13/cobra"
@@ -12,7 +13,7 @@ import (
 func init() {
 	hostnamesCommand.Flags().StringVarP(&DestinationsPath, "infile", "i", "", "Newline delimited file of IPs for which to fetch their hostname")
 	hostnamesCommand.MarkFlagRequired("infile")
-	rootCmd.AddCommand(hostnamesCommand)
+	NetworkRootCmd.AddCommand(hostnamesCommand)
 }
 
 var DestinationsPath string
@@ -32,7 +33,7 @@ var hostnamesCommand = &cobra.Command{
 		for _, each_ln := range hostnameIPs {
 			addr, err := net.LookupAddr(each_ln)
 			if err != nil {
-				if VerboseOutput {
+				if root.VerboseOutput {
 					fmt.Println(err)
 				}
 			} else {

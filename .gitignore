@@ -5,3 +5,6 @@
 main
 hunttools
 .DS_Store
+.env
+build/
+ht
