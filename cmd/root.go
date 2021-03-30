@@ -5,6 +5,7 @@ import (
 	heroku "github.com/rreichel3/hunttools/cmd/heroku"
 	network "github.com/rreichel3/hunttools/cmd/network"
 	redis "github.com/rreichel3/hunttools/cmd/redis"
+	secret "github.com/rreichel3/hunttools/cmd/secret"
 
 	"github.com/spf13/cobra"
 
@@ -36,5 +37,6 @@ func init() {
 	RootCmd.AddCommand(github.GitHubRootCmd)
 	RootCmd.AddCommand(heroku.HerokuRootCmd)
 	RootCmd.AddCommand(network.NetworkRootCmd)
+	RootCmd.AddCommand(secret.SecretRootCmd)
 
 }
