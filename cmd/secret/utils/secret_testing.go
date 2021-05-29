@@ -189,7 +189,6 @@ func testForOkGetResponse(url, authHeaderPrefix, token, accept string) bool {
 
 	}
 	res, _ := http.DefaultClient.Do(req)
-	println(res.StatusCode)
 	if res.StatusCode != 200 {
 		return false
 	}

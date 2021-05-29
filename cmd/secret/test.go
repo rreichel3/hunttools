@@ -50,9 +50,9 @@ var testSecretCmd = &cobra.Command{
 			theSecret := secret_utils.Secret{SecretType: contentType, Token: token}
 			valid, err := theSecret.IsValid()
 			if valid {
-				fmt.Println(secretName, "is valid.")
+				fmt.Println("VALID: ", secretName)
 			} else {
-				fmt.Println(secretName, "is invalid.")
+				fmt.Println("INVALID:", secretName)
 			}
 		}
 
