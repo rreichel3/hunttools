@@ -33,5 +33,14 @@ jobs:
       with:
         name: ht
         path: ./build/hunttools
+    - uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "latest"
+        prerelease: true
+        title: "Development Build"
+        files: |
+          ./build/ht
+          ./build/ht.exe
 #    - name: Test
 #      run: go test -v ./...
