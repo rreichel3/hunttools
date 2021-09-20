@@ -12,6 +12,7 @@ require (
 	github.com/go-ping/ping v0.0.0-20210327002015-80a511380375
 	github.com/go-redis/redis/v8 v8.8.0
 	github.com/google/go-github/v34 v34.0.0
+	github.com/google/uuid v1.3.0
 	github.com/heroku/heroku-go/v5 v5.2.1
 	github.com/spf13/cobra v1.1.3
 	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2
