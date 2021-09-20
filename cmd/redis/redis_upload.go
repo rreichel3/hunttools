@@ -4,11 +4,12 @@ import (
 	b64 "encoding/base64"
 	"encoding/json"
 	"fmt"
-	root "github.com/rreichel3/hunttools/cmd/root_flags"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
+
+	root "github.com/rreichel3/hunttools/cmd/root_flags"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/spf13/cobra"
