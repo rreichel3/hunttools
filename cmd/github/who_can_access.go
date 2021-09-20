@@ -2,11 +2,12 @@ package github
 
 import (
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/google/go-github/v34/github"
 	root "github.com/rreichel3/hunttools/cmd/root_flags"
 	"golang.org/x/oauth2"
-	"os"
-	"strings"
 
 	"github.com/spf13/cobra"
 )
