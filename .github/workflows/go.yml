@@ -23,6 +23,8 @@ jobs:
       run: go build -o ./build/ht
     - name: Build windows binary
       run: env GOOS=windows GOARCH=amd64 go build -o ./build/ht.exe
+    - name: Build macOS binary
+      run: env GOOS=darwin GOARCH=amd64 go build -o ./build/ht_mac
     - uses: "marvinpinto/action-automatic-releases@latest"
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
@@ -31,5 +33,3 @@ jobs:
         title: "Development Build"
         files: |
           ./build/ht*
-#    - name: Test
-#      run: go test -v ./...
