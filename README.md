@@ -12,8 +12,17 @@ Using this, you should spend less time trying to remember how to write a loop in
 Run the following and you should be good to go! 
 
 ```bash
-wget -O ht https://github.com/rreichel3/hunttools/releases/download/latest/ht && ./ht
+wget -O ht https://github.com/rreichel3/hunttools/releases/download/latest/ht && chmod +x ./ht && ./ht
 ```
+
+#### macOS
+
+Run the following and you should be good to go! 
+
+```bash
+wget -O ht https://github.com/rreichel3/hunttools/releases/download/latest/ht_mac && chmod +x ./ht && ./ht
+```
+
 
 #### Windows
 _Note: This is untested_
