@@ -12,7 +12,7 @@ Using this, you should spend less time trying to remember how to write a loop in
 Run the following and you should be good to go! 
 
 ```bash
-wget -O plunder https://github.com/rreichel3/hunttools/releases/download/latest/ht && ./ht
+wget -O ht https://github.com/rreichel3/hunttools/releases/download/latest/ht && ./ht
 ```
 
 #### Windows
