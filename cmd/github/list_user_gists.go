@@ -9,13 +9,10 @@ import (
 )
 
 func init() {
-	listUserGists.Flags().StringVarP(&gistUsername, "owner", "o", "", "The owner to list all of the public repos")
 	listUserGists.MarkFlagRequired("owner")
 
 	GitHubRootCmd.AddCommand(listUserGists)
 }
-
-var gistUsername string
 
 var listUserGists = &cobra.Command{
 	Use:   "list-user-gists",
@@ -30,7 +27,7 @@ var listUserGists = &cobra.Command{
 		allGists := []*github.Gist{}
 		opt := &github.GistListOptions{}
 		for {
-			gists, resp, err := client.Gists.List(ctx, gistUsername, opt)
+			gists, resp, err := client.Gists.List(ctx, owner, opt)
 			if err != nil {
 				fmt.Println(err)
 				return nil

@@ -3,7 +3,6 @@ package github
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/google/go-github/v34/github"
 	root "github.com/rreichel3/hunttools/cmd/root_flags"
@@ -13,13 +12,11 @@ import (
 )
 
 func init() {
-	whoCanAccessCmd.Flags().StringVarP(&NWO, "nwo", "n", "", "The given nwo (github/github)")
-	whoCanAccessCmd.MarkFlagRequired("nwo")
+	whoCanAccessCmd.MarkFlagRequired("owner")
+	whoCanAccessCmd.MarkFlagRequired("repo")
 
 	GitHubRootCmd.AddCommand(whoCanAccessCmd)
 }
-
-var NWO string
 
 var whoCanAccessCmd = &cobra.Command{
 	Use:   "who-can-access",
@@ -37,9 +34,6 @@ var whoCanAccessCmd = &cobra.Command{
 		tc := oauth2.NewClient(ctx, ts)
 		client := github.NewClient(tc)
 
-		components := strings.Split(NWO, "/")
-		owner := components[0]
-		repo := components[1]
 		allUsers := []*github.User{}
 		opt := &github.ListCollaboratorsOptions{
 			ListOptions: github.ListOptions{PerPage: 100},
