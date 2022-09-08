@@ -12,36 +12,49 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sts"
+	"github.com/google/uuid"
 )
 
 type SecretType string
 
 const (
 	GitHubToken       SecretType = "github_token"
+	GitHubAppToken               = "github_app_token"
 	GitHubSSHKey                 = "github_ssh_key"
 	AzureSASToken                = "azure_sas_token"
 	SlackToken                   = "slack_token"
 	AWSAccessTokens              = "aws_access_tokens"
 	HerokuAccessToken            = "heroku_access_token"
 	AzureDevOpsPAT               = "azure_devops_pat"
+	StripeToken                  = "stripe_token"
+	NpmToken                     = "npm_token"
+	AliCloudSecretKey            = "ali_cloud_secret_key"
 )
 
 func GetSecretTypeFromString(secretType string) (SecretType, error) {
 	switch secretType {
-	case "github_token":
+	case "github_token", "GITHUB":
 		return GitHubToken, nil
+	case "GITHUB_APP_TOKEN":
+		return GitHubAppToken, nil
 	case "github_ssh_key":
 		return GitHubSSHKey, nil
-	case "azure_sas_token":
+	case "azure_sas_token", "MICROSOFT_SAS_TOKEN":
 		return AzureSASToken, nil
-	case "slack_token":
+	case "slack_token", "SLACK":
 		return SlackToken, nil
 	case "aws_access_tokens":
 		return AWSAccessTokens, nil
 	case "heroku_access_token":
 		return HerokuAccessToken, nil
-	case "azure_devops_pat":
+	case "azure_devops_pat", "MICROSOFT_VSTS_PAT":
 		return AzureDevOpsPAT, nil
+	case "STRIPE":
+		return StripeToken, nil
+	case "NPM_TOKEN":
+		return NpmToken, nil
+	case "ALICLOUD_SECRET_KEY":
+		return AliCloudSecretKey, nil
 	default:
 		return "", fmt.Errorf("Unknown secret type: %s", secretType)
 	}
@@ -82,14 +95,28 @@ func (secret Secret) IsValid() (bool, error) {
 }
 
 func (secret Secret) testGitHubToken() (bool, error) {
+	RETRIES := 5
 	if secret.Token == "" {
 		return false, fmt.Errorf("GitHub token is empty")
 	}
 	tokenB64 := b64.StdEncoding.EncodeToString([]byte(secret.Token))
-	if testForOkGetResponse(GITHUB_TOKEN_TEST_URL, "Basic", tokenB64, "") {
-		return true, nil
+
+	for i := 0; i < RETRIES; i++ {
+		valid, status := testForOkGetResponseWithStatus(GITHUB_TOKEN_TEST_URL, "Basic", tokenB64, "")
+		if status == 403 {
+			// Sleep for 2 sec then come back
+			println("We hit some rate limiting testing GitHub\n")
+			// time.Sleep(2 * time.Second)
+			break
+		}
+		if valid {
+			return true, nil
+		} else {
+			return false, fmt.Errorf("GitHub token is invalid")
+		}
 	}
-	return false, fmt.Errorf("GitHub token is invalid")
+	println("Hit max retries :(")
+	return false, fmt.Errorf("Retry limit hit")
 }
 
 func (secret Secret) testGitHubSSHKey() (bool, error) {
@@ -190,7 +217,30 @@ func testForOkGetResponse(url, authHeaderPrefix, token, accept string) bool {
 	}
 	res, _ := http.DefaultClient.Do(req)
 	if res.StatusCode != 200 {
+		if res.StatusCode == 403 {
+			print("We hit some rate limiting :(")
+		}
 		return false
 	}
 	return true
+}
+
+func testForOkGetResponseWithStatus(url, authHeaderPrefix, token, accept string) (bool, int) {
+	req, _ := http.NewRequest("GET", url, nil)
+	headerPayload := fmt.Sprintf("%s %s", authHeaderPrefix, token)
+	// Generate GUID
+
+	guid := uuid.Must(uuid.NewRandom())
+	req.Header.Set("Authorization", headerPayload)
+	req.Header.Set("User-Agent", guid.String())
+
+	if accept != "" {
+		req.Header.Set("Accept", accept)
+
+	}
+	res, _ := http.DefaultClient.Do(req)
+	if res.StatusCode != 200 {
+		return false, res.StatusCode
+	}
+	return true, res.StatusCode
 }
