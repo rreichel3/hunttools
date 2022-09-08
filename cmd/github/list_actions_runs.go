@@ -3,6 +3,7 @@ package github
 import (
 	"fmt"
 	"os"
+	"path"
 	"strings"
 
 	"github.com/google/go-github/v34/github"
@@ -13,7 +14,7 @@ import (
 
 func init() {
 	listSelfHostedRuns.MarkFlagRequired("owner")
-
+	listSelfHostedRuns.Flags().IntVarP(&continuationPoint, "continuation", "c", -1, "Contiuation point for where a specific repo dropped")
 	GitHubRootCmd.AddCommand(listSelfHostedRuns)
 }
 
@@ -37,17 +38,17 @@ func getRunsForNWO(owner string, repo string) []*github.WorkflowRun {
 		}
 
 		allRuns = append(allRuns, runs.WorkflowRuns...)
-		fmt.Println(len(allRuns))
 		if resp.NextPage == 0 {
 			break
 		}
+		fmt.Println(resp.NextPage)
 		opt.Page = resp.NextPage
 	}
 
 	return allRuns
 }
 
-func getWorkflow(owner string, repo string, runID int64) *github.Workflow {
+func getActionsWorkflow(owner string, repo string, runID int64) *github.Workflow {
 	client, err := getGitHubClient()
 	if err != nil {
 		fmt.Println("You need to set the GITHUB_PAT environment variable.\n")
@@ -60,6 +61,26 @@ func getWorkflow(owner string, repo string, runID int64) *github.Workflow {
 		return nil
 	}
 	return workflow
+}
+
+func getRepoContents(owner string, repo string, path string, sha string) *github.RepositoryContent {
+	client, err := getGitHubClient()
+	if err != nil {
+		fmt.Println("You need to set the GITHUB_PAT environment variable.\n")
+		return nil
+	}
+
+	opt := &github.RepositoryContentGetOptions{
+		Ref: sha,
+	}
+
+	contents, _, _, err := client.Repositories.GetContents(ctx, owner, repo, path, opt)
+	if err != nil {
+		fmt.Println(err)
+		return nil
+	}
+	return contents
+
 }
 
 func getJobsForRun(owner string, repo string, runID int64) []*github.WorkflowJob {
@@ -89,6 +110,8 @@ func getJobsForRun(owner string, repo string, runID int64) []*github.WorkflowJob
 
 	return allJobsForWorkflow
 }
+
+var continuationPoint int
 
 var listSelfHostedRuns = &cobra.Command{
 	Use:   "list-actions-runs",
@@ -141,47 +164,71 @@ var listSelfHostedRuns = &cobra.Command{
 		// I need to record the owner, repo, runID, jobID, workflow file, and headref
 		// Print csv header
 		seenFlows := map[string]bool{}
-		for i, workflowRun := range allWorkflowRuns {
-			fmt.Println(i, "/", len(allWorkflowRuns))
-			// Temporary workaround to continue where we stopped
-			// if i < 2748 {
-			// 	continue
-			// }
-			fmt.Println("Getting workflow")
-			workflow := getWorkflow(owner, *workflowRun.Repository.Name, *workflowRun.WorkflowID)
-			actionUniqueID := workflowRun.GetHeadSHA() + ":" + workflow.GetPath()
-			// We do this to decrease the number of calls we need to make
-			if seenFlows[actionUniqueID] {
-				continue
-			} else {
-				seenFlows[actionUniqueID] = true
+		var f *os.File = nil
+		var er error
+		csvOutPath := fmt.Sprintf("workflows/%s/results.csv", owner)
+		if continuationPoint != -1 {
+			f, er = os.OpenFile(csvOutPath, os.O_APPEND|os.O_WRONLY, 0600)
+			if er != nil {
+				fmt.Println("Error opening existing file - You likely need to not use a continuation point")
+				return er
 			}
-			fmt.Println("Getting jobs")
-			jobs := getJobsForRun(owner, *workflowRun.Repository.Name, *workflowRun.ID)
-			fmt.Println("Got", len(jobs), "jobs")
-
-			for _, job := range jobs {
-				groupID := int64(-1)
-				if job.RunnerGroupID != nil {
-					groupID = *job.RunnerGroupID
-				}
-				selfHosted := false
-				for _, label := rangejob.Labels {
-					if label == "self-hosted" {
-						selfHosted = true
-						break
-					}
-				}
-				entry := fmt.Sprintf("%s,%s,%d,%d,%d,%s,%s,%s,%s", owner, *workflowRun.Repository.Name, *workflowRun.ID, job.GetID(), groupID, workflow.GetPath(), job.GetHeadSHA(), workflowRun.GetEvent(), *workflowRun.WorkflowURL)
-				workflowOutput = append(workflowOutput, entry)
-
+		} else {
+			f, er = os.Create(csvOutPath)
+			if er != nil {
+				fmt.Println("Error creating file")
+				return er
 			}
-
+			f.WriteString("owner,repo,runID,,workflow,headref,event,workflowURL,selfHosted\n")
+			f.Sync()
 		}
-		fmt.Println("owner,repo,runID,jobID,runnerGroup,workflow,headref,event,workflowURL")
-		for _, workflowEntry := range workflowOutput {
-			//TODO: I need to use match groups properly
-			fmt.Println(workflowEntry)
+
+		defer f.Close()
+
+		for i, workflowRun := range allWorkflowRuns {
+			if i < continuationPoint {
+				continue
+			}
+			fmt.Println(i, "/", len(allWorkflowRuns)-1)
+
+			// I need the file contents then I can see if it references `self-hosted`
+			workflow := getWorkflow(owner, *workflowRun.Repository.Name, *workflowRun.WorkflowID)
+			if workflow == nil {
+				fmt.Println("workflow came back nil :( ")
+				break
+			}
+			// Get file contents
+			fileContents := getRepoContents(owner, *workflowRun.Repository.Name, workflow.GetPath(), workflowRun.GetHeadSHA())
+			if fileContents == nil {
+				fmt.Println("fileContents came back nil :( ")
+				break
+			}
+			// Now that we have the contents we need to parse them, save them, etc
+			rawFileString, err := fileContents.GetContent()
+			if err != nil {
+				fmt.Println("Error encountered decoding request")
+			}
+			uniqueFileID := fmt.Sprintf("%s:%s", workflowRun.GetHeadSHA(), workflow.GetPath())
+			selfHosted := strings.Contains(rawFileString, "self-hosted")
+
+			entry := fmt.Sprintf("%s,%s,%d,%s,%s,%s,%s,%t", owner, *workflowRun.Repository.Name, *workflowRun.ID, workflow.GetPath(), workflowRun.GetHeadSHA(), workflowRun.GetEvent(), *workflowRun.WorkflowURL, selfHosted)
+			f.WriteString(entry + "\n")
+			f.Sync()
+			workflowOutput = append(workflowOutput, entry)
+			if !seenFlows[uniqueFileID] {
+				fullPath := fmt.Sprintf("workflows/%s/%s/%s/%s", owner, *workflowRun.Repository.Name, workflowRun.GetHeadSHA(), workflow.GetPath())
+				basePath := ""
+				splitPath := strings.Split(fullPath, "/")
+				for _, pathSegment := range splitPath[:len(splitPath)-1] {
+
+					basePath = path.Join(basePath, pathSegment)
+					ensureDir(basePath)
+				}
+				os.WriteFile(fullPath, []byte(rawFileString), 0644)
+			}
+
+			seenFlows[uniqueFileID] = true
+
 		}
 		return nil
 

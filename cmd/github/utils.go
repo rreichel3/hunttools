@@ -9,6 +9,15 @@ import (
 	"golang.org/x/oauth2"
 )
 
+func getGitHubToken() (string, error) {
+	auth_token, ok := os.LookupEnv("GITHUB_PAT")
+	if !ok {
+		fmt.Println("You need to set the GITHUB_PAT environment variable.")
+		return "", errors.New("You need to set the GITHUB_PAT environment variable.")
+	}
+	return auth_token, nil
+}
+
 func getGitHubClient() (*github.Client, error) {
 	auth_token, ok := os.LookupEnv("GITHUB_PAT")
 	if !ok {
