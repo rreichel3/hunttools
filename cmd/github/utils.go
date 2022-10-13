@@ -10,19 +10,19 @@ import (
 )
 
 func getGitHubToken() (string, error) {
-	auth_token, ok := os.LookupEnv("GITHUB_PAT")
+	auth_token, ok := os.LookupEnv("GITHUB_TOKEN")
 	if !ok {
-		fmt.Println("You need to set the GITHUB_PAT environment variable.")
-		return "", errors.New("You need to set the GITHUB_PAT environment variable.")
+		fmt.Println("You need to set the GITHUB_TOKEN environment variable.")
+		return "", errors.New("You need to set the GITHUB_TOKEN environment variable.")
 	}
 	return auth_token, nil
 }
 
 func getGitHubClient() (*github.Client, error) {
-	auth_token, ok := os.LookupEnv("GITHUB_PAT")
+	auth_token, ok := os.LookupEnv("GITHUB_TOKEN")
 	if !ok {
-		fmt.Println("You need to set the GITHUB_PAT environment variable.")
-		return nil, errors.New("You need to set the GITHUB_PAT environment variable.")
+		fmt.Println("You need to set the GITHUB_TOKEN environment variable.")
+		return nil, errors.New("You need to set the GITHUB_TOKEN environment variable.")
 	}
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: auth_token},

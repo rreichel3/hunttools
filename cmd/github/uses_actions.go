@@ -22,7 +22,7 @@ var continuationNWO string
 func listWorkflowsForNWO(owner string, repo string) []*github.Workflow {
 	client, err := getGitHubClient()
 	if err != nil {
-		fmt.Println("You need to set the GITHUB_PAT environment variable.\n")
+		fmt.Println("You need to set the GITHUB_TOKEN environment variable.\n")
 		return nil
 	}
 	allWorkflows := []*github.Workflow{}
@@ -50,7 +50,7 @@ func listWorkflowsForNWO(owner string, repo string) []*github.Workflow {
 func nwoHasWorkflows(owner string, repo string) (bool, error) {
 	client, err := getGitHubClient()
 	if err != nil {
-		fmt.Println("You need to set the GITHUB_PAT environment variable.\n")
+		fmt.Println("You need to set the GITHUB_TOKEN environment variable.\n")
 		return false, err
 	}
 
