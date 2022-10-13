@@ -21,7 +21,7 @@ func init() {
 func getRunsForNWO(owner string, repo string) []*github.WorkflowRun {
 	client, err := getGitHubClient()
 	if err != nil {
-		fmt.Println("You need to set the GITHUB_PAT environment variable.\n")
+		fmt.Println("You need to set the GITHUB_TOKEN environment variable.\n")
 		return nil
 	}
 	allRuns := []*github.WorkflowRun{}
@@ -51,7 +51,7 @@ func getRunsForNWO(owner string, repo string) []*github.WorkflowRun {
 func getActionsWorkflow(owner string, repo string, runID int64) *github.Workflow {
 	client, err := getGitHubClient()
 	if err != nil {
-		fmt.Println("You need to set the GITHUB_PAT environment variable.\n")
+		fmt.Println("You need to set the GITHUB_TOKEN environment variable.\n")
 		return nil
 	}
 
@@ -66,7 +66,7 @@ func getActionsWorkflow(owner string, repo string, runID int64) *github.Workflow
 func getRepoContents(owner string, repo string, path string, sha string) *github.RepositoryContent {
 	client, err := getGitHubClient()
 	if err != nil {
-		fmt.Println("You need to set the GITHUB_PAT environment variable.\n")
+		fmt.Println("You need to set the GITHUB_TOKEN environment variable.\n")
 		return nil
 	}
 
@@ -86,7 +86,7 @@ func getRepoContents(owner string, repo string, path string, sha string) *github
 func getJobsForRun(owner string, repo string, runID int64) []*github.WorkflowJob {
 	client, err := getGitHubClient()
 	if err != nil {
-		fmt.Println("You need to set the GITHUB_PAT environment variable.\n")
+		fmt.Println("You need to set the GITHUB_TOKEN environment variable.\n")
 		return nil
 	}
 
@@ -121,9 +121,9 @@ var listSelfHostedRuns = &cobra.Command{
 
 		var repos = []string{}
 		if repo == "" {
-			auth_token, ok := os.LookupEnv("GITHUB_PAT")
+			auth_token, ok := os.LookupEnv("GITHUB_TOKEN")
 			if !ok {
-				fmt.Println("You need to set the GITHUB_PAT environment variable.\n")
+				fmt.Println("You need to set the GITHUB_TOKEN environment variable.\n")
 				return nil
 			}
 			ts := oauth2.StaticTokenSource(

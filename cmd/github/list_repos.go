@@ -44,7 +44,7 @@ var listRepos = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		client, err := getGitHubClient()
 		if err != nil {
-			fmt.Println("You need to set the GITHUB_PAT environment variable.\n")
+			fmt.Println("You need to set the GITHUB_TOKEN environment variable.\n")
 			return nil
 		}
 

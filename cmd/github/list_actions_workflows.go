@@ -19,7 +19,7 @@ func init() {
 func getWorkflow(owner string, repo string, runID int64) *github.Workflow {
 	client, err := getGitHubClient()
 	if err != nil {
-		fmt.Println("You need to set the GITHUB_PAT environment variable.\n")
+		fmt.Println("You need to set the GITHUB_TOKEN environment variable.\n")
 		return nil
 	}
 
@@ -34,7 +34,7 @@ func getWorkflow(owner string, repo string, runID int64) *github.Workflow {
 func getContents(owner string, repo string, path string) *github.RepositoryContent {
 	client, err := getGitHubClient()
 	if err != nil {
-		fmt.Println("You need to set the GITHUB_PAT environment variable.\n")
+		fmt.Println("You need to set the GITHUB_TOKEN environment variable.\n")
 		return nil
 	}
 

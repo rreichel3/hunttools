@@ -21,7 +21,7 @@ var overscopedPages = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		client, err := getGitHubClient()
 		if err != nil {
-			fmt.Println("You need to set the GITHUB_PAT environment variable.")
+			fmt.Println("You need to set the GITHUB_TOKEN environment variable.")
 			return nil
 		}
 		opt := &github.RepositoryListByOrgOptions{

@@ -23,9 +23,9 @@ var whoCanAccessCmd = &cobra.Command{
 	Short: "Finds who can access a given nwo",
 	Long:  `Who can access a given nwo`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		auth_token, ok := os.LookupEnv("GITHUB_PAT")
+		auth_token, ok := os.LookupEnv("GITHUB_TOKEN")
 		if !ok {
-			fmt.Println("You need to set the GITHUB_PAT environment variable.\n")
+			fmt.Println("You need to set the GITHUB_TOKEN environment variable.\n")
 			return nil
 		}
 		ts := oauth2.StaticTokenSource(
